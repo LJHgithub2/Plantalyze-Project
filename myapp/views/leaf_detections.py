@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class LeafDetectionView(APIView):
     # 클래스 변수로 모델을 초기화
-    model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'model', 'leaf_detection.pt')
+    model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),'static','model', 'leaf_detection.pt')
     model = None
 
     @classmethod
@@ -27,18 +27,18 @@ class LeafDetectionView(APIView):
         if not image_path:
             return Response({"error": "No image path provided."}, status=status.HTTP_400_BAD_REQUEST)
         
-        full_image_path = os.path.join(os.path.dirname(__file__),"../image/", image_path)
+        full_image_path = os.path.join(os.path.dirname(__file__),"../static/image/", image_path)
         
         if not os.path.exists(full_image_path):
             return Response({"error": "Image file not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        analysis_result = self.analyze_plant(full_image_path)
+        analysis_result = self.detection_leaf(full_image_path)
         return Response({
             "image_path": image_path,
             "analysis": analysis_result
         }, status=status.HTTP_200_OK)
     
-    def analyze_plant(self, image_path):
+    def detection_leaf(self, image_path):
         if not self.model:
             return {"error": "Model is not loaded."}
         
