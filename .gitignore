@@ -1,0 +1,8 @@
+PlantDiseaseDetection/data/*
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.svg
+*.pt
