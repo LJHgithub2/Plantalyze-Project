@@ -1,8 +1,13 @@
 PlantDiseaseDetection/data/*
+
+*.h5
+*.pt
+
 *.jpg
 *.jpeg
 *.png
 *.gif
 *.bmp
 *.svg
-*.pt
+*.env
+PlantDiseaseDetection/public/*
