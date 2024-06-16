@@ -1,11 +1,15 @@
-// App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    Navigate,
+} from 'react-router-dom';
 import PlantDashboard from './page/dashboard';
 import Header from './page/nav';
 import PlantForm from './page/PlantForm';
 import History from './page/History';
-import MyComponent from './page/test';
+// import Login from './page/login';
+// import Register from './page/register';
 
 export default function App() {
     return (
@@ -13,11 +17,16 @@ export default function App() {
             <Header />
             <Routes>
                 <Route path="/" element={<PlantDashboard />} />
-                <Route path="/update" element={<PlantForm class_ />} />
-                <Route path="/dashboard" element={<PlantDashboard class_ />} />
-                <Route path="/history" element={<History class_ />} />
+                <Route path="/update" element={<PlantForm />} />
+                <Route path="/dashboard" element={<PlantDashboard />} />
+                <Route path="/history" element={<History />} />
+                <Route path="*" element={<Navigate to="/dashboard" />} />
 
-                <Route path="/test" element={<MyComponent class_ />} />
+                {/* <Route
+                            path="/login"
+                            element={<Login onLogin={login} />}
+                        />
+                        <Route path="/register" element={<Register />} /> */}
             </Routes>
         </Router>
     );
