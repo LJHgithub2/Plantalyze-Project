@@ -5,6 +5,8 @@ import PlantImageUpload from '../components/PlantImageUpload';
 import NumberInputWithButtons from '../components/NumberInputWithButtons';
 import Spinner from '../components/Spinner';
 
+const backendIP = process.env.REACT_APP_BACKEND_IP;
+
 function PlantForm() {
     const [file, setFile] = useState(null);
     const navigate = useNavigate(); // useHistory 훅 사용
@@ -25,7 +27,7 @@ function PlantForm() {
             formData.append('bbox_right_bottom_x', windHours);
 
             const response = await axios.post(
-                'http://localhost:8000/api/plant/create/',
+                `${backendIP}api/plant/create/`,
                 formData,
                 {
                     headers: {

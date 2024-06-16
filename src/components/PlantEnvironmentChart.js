@@ -11,6 +11,7 @@ import {
 } from 'chart.js';
 import Chart from 'chart.js/auto';
 import axios from 'axios';
+const backendIP = process.env.REACT_APP_BACKEND_IP;
 
 // Chart.js의 구성 요소를 명시적으로 등록
 Chart.register(
@@ -41,7 +42,7 @@ const PlantEnvironmentChart = () => {
     useEffect(() => {
         // 환경 데이터 가져오기
         axios
-            .get('http://localhost:8000/api/plant/get-env')
+            .get(`${backendIP}api/plant/get-env/`)
             .then((response) => {
                 // 최근 30개 데이터만 가져오기
                 const recentData = response.data.slice(-30);

@@ -3,8 +3,11 @@ import Button from '@mui/material/Button';
 import axios from 'axios';
 import PlantEnvironmentChart from '../components/PlantEnvironmentChart';
 
+const backendIP = process.env.REACT_APP_BACKEND_IP;
+
 const handleControlClick = (type) => {
-    var api_path = `http://localhost:9000/${type}`;
+    console.log(backendIP);
+    var api_path = `${backendIP}${type}`;
     axios
         .get(api_path)
         .then((response) => {
@@ -20,7 +23,7 @@ const PlantDashboard = () => {
 
     useEffect(() => {
         axios
-            .get('http://localhost:8000/api/plant/latest-plant/')
+            .get(`${backendIP}api/plant/latest-plant/`)
             .then((response) => {
                 setPlantData(response.data);
             })
