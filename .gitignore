@@ -4,7 +4,8 @@
 ### Custom ###
 *.pt
 *.h5
-static/
+static/trash/*
+static/env/
 
 ### Django ###
 *.log
