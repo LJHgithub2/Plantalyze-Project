@@ -22,8 +22,8 @@ void loop() {
   delay(1000);            
 }
 
-void activate_control(int LED, int water, int moter){
+void activate_control(int LED, int water, int motor){
   digitalWrite(RELAY_PIN1, LED); 
   digitalWrite(RELAY_PIN2, water); 
-  digitalWrite(RELAY_PIN3, moter);
+  digitalWrite(RELAY_PIN3, motor);
 }
