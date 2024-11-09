@@ -1,19 +1,7 @@
-/*
- WiFiEsp example: WebServer
-
- A simple web server that shows the value of the analog input 
- pins via a web page using an ESP8266 module.
- This sketch will print the IP address of your ESP8266 module (once connected)
- to the Serial monitor. From there, you can open that address in a web browser
- to display the web page.
- The web page will be automatically refreshed each 20 seconds.
-
- For more details see: http://yaab-arduino.blogspot.com/p/wifiesp.html
-*/
 
 #include "WiFiEsp.h"
+#include <ArduinoJson.h>
 
-// Emulate Serial1 on pins 6/7 if not present
 #ifndef HAVE_HWSERIAL1
 #include <SoftwareSerial.h> 
 #define BT_RXD 2 
@@ -21,12 +9,22 @@
 SoftwareSerial Serial1(BT_RXD, BT_TXD); 
 #endif
 
+
+// char ssid[] = "jong";            // your network SSID (name)
+// char pass[] = "dl994550";        // your network password
 char ssid[] = "iptime_jong";            // your network SSID (name)
 char pass[] = "ditlswlwhs3";        // your network password
-int status = WL_IDLE_STATUS;     // the Wifi radio's status
-int reqCount = 0;                // number of requests received
+int status = WL_IDLE_STATUS;     // wifi연결안된 상태
+int retryCount = 0;             // wifi 연결시도 횟수
+const int maxRetries = 10;  // wifi 최대 재시도 횟수
 
 WiFiEspServer server(80);
+
+
+// 함수 선언
+void handleRoot(WiFiEspClient client);
+void handleStatus(WiFiEspClient client);
+void handleNotFound(WiFiEspClient client);
 
 
 void setup()
@@ -38,7 +36,6 @@ void setup()
   // initialize ESP module
   WiFi.init(&Serial1);
 
-  // check for the presence of the shield
   if (WiFi.status() == WL_NO_SHIELD) {
     Serial.println("WiFi shield not present");
     // don't continue
@@ -48,82 +45,133 @@ void setup()
   // 해당 코드가 없으면 와이파이 연결이 안된다.
   // 원인 미상
   int numSsid = WiFi.scanNetworks();
-
-  // attempt to connect to WiFi network
-  while ( status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(ssid);
-    // Serial.println(pass);
-    // Connect to WPA/WPA2 network
-    status = WiFi.begin(ssid, pass);
-    delay(10000);
+  Serial.println(numSsid);
+  // wifi 연결 시도
+  while (status != WL_CONNECTED && retryCount < maxRetries) {
+      // Serial.print("Attempting to connect to WPA SSID: ");
+      Serial.println(ssid);
+      status = WiFi.begin(ssid, pass);
+      delay(100);  // 재시도 전 대기 시간
+      retryCount++;
+  }
+  if (status != WL_CONNECTED) {
+    Serial.println("Failed to connect to WiFi after maximum retries.");
+    while (true);   // 다른 보드에서는 무한 루프를 통해 프로그램 멈춤
   }
 
   Serial.println("You're connected to the network");
+  // 성공한 와이파이 이름 및 ip 출력
   printWifiStatus();
   
   // start the web server on port 80
   server.begin();
 }
 
-
-void loop()
-{
-  // listen for incoming clients
+void loop() {
   WiFiEspClient client = server.available();
+  
   if (client) {
     Serial.println("New client");
-    // an http request ends with a blank line
     boolean currentLineIsBlank = true;
+    String request = "";
+    String postData = "";
+    int contentLength = 16;
     while (client.connected()) {
       if (client.available()) {
         char c = client.read();
-        Serial.write(c);
-        // if you've gotten to the end of the line (received a newline
-        // character) and the line is blank, the http request has ended,
-        // so you can send a reply
+        request += c;
+        
         if (c == '\n' && currentLineIsBlank) {
-          Serial.println("Sending response");
-          
-          // send a standard http response header
-          // use \r\n instead of many println statements to speedup data send
-          client.print(
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/html\r\n"
-            "Connection: close\r\n"  // the connection will be closed after completion of the response
-            "Refresh: 20\r\n"        // refresh the page automatically every 20 sec
-            "\r\n");
-          client.print("<!DOCTYPE HTML>\r\n");
-          client.print("<html>\r\n");
-          client.print("<h1>Hello World!</h1>\r\n");
-          client.print("Requests received: ");
-          client.print(++reqCount);
-          client.print("<br>\r\n");
-          client.print("Analog input A0: ");
-          client.print(analogRead(0));
-          client.print("<br>\r\n");
-          client.print("</html>\r\n");
-          break;
+            for (int i = 0; i < contentLength; i++) {
+              if (client.available()) {
+                postData += (char)client.read();
+              }
+            }
+            processRequest(client, request, postData);
+            break;
         }
+        
         if (c == '\n') {
-          // you're starting a new line
           currentLineIsBlank = true;
-        }
-        else if (c != '\r') {
-          // you've gotten a character on the current line
+        } else if (c != '\r') {
           currentLineIsBlank = false;
         }
       }
     }
-    // give the web browser time to receive the data
     delay(10);
-
-    // close the connection:
     client.stop();
     Serial.println("Client disconnected");
   }
 }
+void processRequest(WiFiEspClient client, String request, String postData) {
+  Serial.println("출력");
+  Serial.println(request);
+  Serial.println(postData);
+  if (request.indexOf("GET /api/data") != -1) {
+    StaticJsonDocument<200> doc;
+    doc["sensor"] = "temperature";
+    doc["value"] = 25.5;
 
+    client.println("HTTP/1.1 200 OK");
+    client.println("Content-Type: application/json");
+    client.println("Connection: close");
+    client.println();
+    
+    String response;
+    serializeJson(doc, response);
+    client.println(response);
+  } else {
+    client.println("HTTP/1.1 404 Not Found");
+    client.println("Content-Type: text/plain");
+    client.println("Connection: close");
+    client.println();
+    client.println("404 Not Found");
+  }
+}
+// void handleRoot(WiFiEspClient client) {
+//   StaticJsonDocument<200> doc;
+//   doc["message"] = "Welcome to the API server!";
+//   doc["available_routes"] = "/status, /";
+
+//   String response;
+//   serializeJson(doc, response);
+  
+//   client.print("HTTP/1.1 200 OK\r\n");
+//   client.print("Content-Type: application/json\r\n");
+//   client.print("Connection: close\r\n");
+//   client.print("\r\n");
+//   client.print(response);
+// }
+
+// void handleStatus(WiFiEspClient client) {
+//   StaticJsonDocument<200> doc;
+//   doc["message"] = "Server is running";
+//   doc["requests_received"] = ++reqCount;
+//   doc["analog_A0"] = analogRead(0);
+
+//   String response;
+//   serializeJson(doc, response);
+  
+//   client.print("HTTP/1.1 200 OK\r\n");
+//   client.print("Content-Type: application/json\r\n");
+//   client.print("Connection: close\r\n");
+//   client.print("\r\n");
+//   client.print(response);
+// }
+
+// void handleNotFound(WiFiEspClient client) {
+//   StaticJsonDocument<200> doc;
+//   doc["error"] = "Route not found";
+
+//   String response;
+//   serializeJson(doc, response);
+  
+//   client.print("HTTP/1.1 404 Not Found\r\n");
+//   client.print("Content-Type: application/json\r\n");
+//   client.print("Connection: close\r\n");
+//   client.print("\r\n");
+//   client.print(response);
+// }
 
 void printWifiStatus()
 {
