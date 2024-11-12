@@ -1,7 +1,7 @@
 #include <DHT.h>
-#define SOILPIN A1
-#define DHTPIN A2
-#define CDSPIN A3
+#define SOILPIN A0
+#define DHTPIN A1
+#define CDSPIN A2
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 
