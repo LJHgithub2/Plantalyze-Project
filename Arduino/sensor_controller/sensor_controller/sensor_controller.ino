@@ -27,7 +27,8 @@ void setup() {
 void loop() {
 
     // rtcManager.updateDateTime();
+    // sensorManager.printAll();
     webServer.handleClients();
 
-    delay(1000); // 10초마다
+    delay(10000); // 10초마다
 }

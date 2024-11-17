@@ -47,7 +47,7 @@ void SensorManager::printAll() {
 
     Serial.print("Light Level: ");
     Serial.print(getLightLevel());
-    Serial.println(" %");
+    Serial.println();
 
     Serial.print("Soil Moisture: ");
     Serial.print(getSoilMoisture());
