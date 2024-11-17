@@ -4,6 +4,7 @@
 class LightSensor {
 public:
     LightSensor(int pin);
+    void begin();
     int getLightLevel();
 
 private:
