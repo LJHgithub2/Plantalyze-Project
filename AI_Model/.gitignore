@@ -16,6 +16,7 @@ PlantDiseaseDetection/data/*
 *.pt
 PlantDiseaseDetection/data/*
 
+*.keras
 *.h5
 *.pt
 
